@@ -1,0 +1,10 @@
+.toolBox {
+  position: absolute;
+  left: 10px;
+  top: 50px;
+  display: grid;
+  grid-template-columns: 46px 46px;
+  background-color: white;
+  padding: 5px;
+  grid-gap: 5px;
+}

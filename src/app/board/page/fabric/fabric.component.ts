@@ -1,6 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { fabric } from 'fabric';
 import * as _ from 'lodash';
+import { v4 as uuid } from 'uuid';
+
 
 @Component({
   selector: 'bordFabric',
@@ -49,6 +51,7 @@ export class FabricComponent implements OnInit {
       rx: 5,
       ry: 5,
       // selectable: false,
+      objID: uuid(),
     });
 
     this.bordCanvas.add(rect);
@@ -80,7 +83,7 @@ export class FabricComponent implements OnInit {
     // handle Selections
     console.log('handleSelection=>', type, e.target?.type);
     // log events on statusbar
-    this.canvasEvent = type + '=' + e.target?.type;
+    this.canvasEvent = type + ' = ' + e.target?.type + ' / ' + e.target?.objID;
     console.log(this, this.canvasEvent);
   }
 
