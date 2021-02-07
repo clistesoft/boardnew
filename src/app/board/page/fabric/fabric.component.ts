@@ -9,6 +9,7 @@ import {
   ViewChild,
   ElementRef,
   ChangeDetectorRef,
+  HostListener,
 } from '@angular/core';
 import { fabric } from 'fabric';
 import * as _ from 'lodash';
@@ -20,13 +21,14 @@ import { v4 as uuid } from 'uuid';
   styleUrls: ['./fabric.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-
 export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('htmlCanvas', { static: true }) htmlCanvas: ElementRef | undefined;
   // public bordCanvas: any;
-  private bordCanvas: fabric.Canvas | undefined;
+  private bordCanvas!: fabric.Canvas;
   public canvasEvent!: string;
+  public keyPressed!: KeyboardEvent;
   public mousePointer!: { x: number; y: number };
+  public temporaryMode: string = '';
 
   @Input()
   permanentMode!: string;
@@ -44,6 +46,33 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
     });
   }
 
+  @HostListener('window:keydown', ['$event'])
+  @HostListener('window:keyup', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    this.keyPressed = event;
+    this.temporaryMode = '';
+    // console.log(event);
+    switch (event.type) {
+      case 'keydown':
+        // temporary mode for to draw
+        if (event.code === 'AltLeft' || event.code === 'AltRight') {
+          this.temporaryMode = 'draw:start';
+        }
+        break;
+      case 'keyup':
+        if (event.code === 'AltLeft' || event.code === 'AltRight') {
+          this.temporaryMode = 'draw:stop';
+        }
+        break;
+      default:
+        this.temporaryMode = '';
+        break;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    return false;
+  }
+
   ngAfterViewInit(): void {
     // setup front side canvas
     this.bordCanvas = new fabric.Canvas(this.htmlCanvas?.nativeElement, {
@@ -52,6 +81,26 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
       // freeDrawingCursor:
     });
     this.bordCanvas.freeDrawingBrush.width = 4;
+
+    // this.bordCanvas.freeDrawingBrush.onMouseDown = (function(onMouseDown) {
+    //   return function(pointer) {
+    //     onMouseDown.call(this, pointer);
+    //   }
+    // })(this.bordCanvas.freeDrawingBrush.onMouseDown);
+
+    // this.bordCanvas.freeDrawingBrush.onMouseMove = (function(onMouseMove) {
+    //   return function(pointer) {
+    //     onMouseMove.call(this, pointer);
+    //   }
+    // })(this.bordCanvas.freeDrawingBrush.onMouseMove);
+
+    // this.bordCanvas.freeDrawingBrush.onMouseUp = (function(onMouseUp) {
+    //   return function(pointer) {
+    //     console.log('up');
+    //     this.updatedOn = Date.now();
+    //     onMouseUp.call(this, pointer);
+    //   }
+    // })(this.bordCanvas.freeDrawingBrush.onMouseUp);
 
     // initialize selection Events
     this.bordCanvas.on({
@@ -68,7 +117,7 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
         this.handleSelection('selection:updated', e);
       },
     });
-    // initialize mouse Events
+    // // initialize mouse Events
     this.bordCanvas.on({
       /**
         'mouse:up', 'mouse:down', 'mouse:move', 'mouse:up:before', 'mouse:down:before', 'mouse:move:before'
@@ -118,15 +167,50 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
   handleSelection(type: string, e: any) {
     // console.log('handleSelection=>', type, e.target?.type);
     // log events on statusbar
-    this.canvasEvent = type + ' = ' + e.target?.type ;
+    this.canvasEvent = type + (e.target?.type ? ' = ' + e.target?.type : '');
     // console.log(this, this.canvasEvent);
     this.cdr.detectChanges();
   }
 
   handleMouse(type: string, e: any): void {
+    const _this = this;
     // console.log('handleSelection=>', type, e.absolutePointer, e.pointer);
-    this.mousePointer = e.pointer;
+    this.mousePointer = this.bordCanvas.getPointer(e);
     this.cdr.detectChanges();
-  }
+    //check temporaryMode
+    // this.bordCanvas.isDrawingMode =
+    //   this.temporaryMode === 'draw:start' ? true : false;
+    // // pointer = this.getPointer(e);
+    if (this.temporaryMode === 'draw:start') {
+      if (!this.bordCanvas.isDrawingMode) {
+        this.bordCanvas.isDrawingMode = true;
+        this.bordCanvas.freeDrawingBrush.onMouseDown(e, this.mousePointer);
+      }
+      this.bordCanvas.freeDrawingBrush.onMouseMove(this.mousePointer, {
+        e: e,
+        pointer: this.mousePointer,
+      });
+    }
+    if (this.temporaryMode === 'draw:stop' && this.bordCanvas.isDrawingMode ) {
+      this.bordCanvas.isDrawingMode = false;
+      this.bordCanvas.freeDrawingBrush.onMouseUp(this.mousePointer, {
+        e: e,
+        pointer: this.mousePointer,
+      });
+    }
+    // let obj = { pointer: this.mousePointer, e: e };
+    // if (this.bordCanvas._isCurrentlyDrawing) {
+    //   var pointer = this.getPointer(e);
+    //
+    // }
+    // if (!this.bordCanvas.isDrawing) {
+    //   this.bordCanvas.isDrawing = true;
+    //   this.bordCanvas.freeDrawingBrush.onMouseDown(pointer, obj);
+    // }
+    // }
 
+    // this.freeDrawingBrush.onMouseMove(pointer, obj);
+    // this._handleEvent(e, 'move');
+    this.bordCanvas.renderAll();
+  }
 }

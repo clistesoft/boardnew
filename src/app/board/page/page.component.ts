@@ -13,15 +13,15 @@ export class PageComponent implements OnInit {
     this.permanentMode = 'selection';
   }
 
-  @HostListener('window:keydown', ['$event'])
-  @HostListener('window:keyup', ['$event'])
+  // @HostListener('window:keydown', ['$event'])
+  // @HostListener('window:keyup', ['$event'])
+  // handleKeyboardEvent(event: KeyboardEvent) {
+  //   this.keyPressed = event.code;
 
-  handleKeyboardEvent(event: KeyboardEvent) {
-    this.keyPressed = event.code;
-    event.preventDefault();
-    event.stopPropagation();
-    return false;
-  }
+  //   event.preventDefault();
+  //   event.stopPropagation();
+  //   return false;
+  // }
 
   setMode(value:any){
     this.permanentMode = value;

@@ -1,8 +1,24 @@
 <div>
-  <span class="badge bg-warning">permanentMode => {{permanentMode}}</span>
+  <span class="badge bg-warning">permanentMode => {{ permanentMode }}</span>
+  <span class="badge bg-secondary text-light"
+    >Key => {{ keyPressed?.type }} {{ keyPressed?.key }}/{{
+      keyPressed?.code
+    }}
+  </span>
 </div>
-<canvas id="canvasBord" #htmlCanvas width="1200" height="800" style="border: 1px dashed red;"></canvas>
 <div>
-  <span class="badge bg-info text-light">event => {{canvasEvent}}</span>
-  <span class="badge bg-warning ">mouse => {{mousePointer?.x}},{{mousePointer?.y}}</span>
+  <span class="badge bg-danger text-light">temporaryMode => {{ temporaryMode }}</span>
+</div>
+<canvas
+  id="canvasBord"
+  #htmlCanvas
+  width="1200"
+  height="800"
+  style="border: 1px dashed red"
+></canvas>
+<div>
+  <span class="badge bg-info text-light">event => {{ canvasEvent }}</span>
+  <span class="badge bg-warning"
+    >mouse => {{ mousePointer?.x }},{{ mousePointer?.y }}</span
+  >
 </div>
