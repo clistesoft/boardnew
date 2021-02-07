@@ -23,7 +23,7 @@ export class PageComponent implements OnInit {
     return false;
   }
 
-  addItem(value:any){
+  setMode(value:any){
     this.permanentMode = value;
   }
 

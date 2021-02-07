@@ -20,11 +20,11 @@ export class ToolboxComponent implements OnInit, OnChanges {
 
   constructor() {}
   @Input()
-  mode!: string;
-  @Output() toolSelectedEvent = new EventEmitter<string>();
+  permanentMode!: string;
+  @Output() onToolSelection = new EventEmitter<string>();
 
   onToolSelect(value: string) {
-    this.toolSelectedEvent.emit(value);
+    this.onToolSelection.emit(value);
   }
 
   ngOnInit(): void {}
@@ -32,6 +32,6 @@ export class ToolboxComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     // Called before any other lifecycle hook. Use it to inject dependencies, but avoid any serious work here.
     // Add '${implements OnChanges}' to the class.
-    console.log('changed in menu', this.mode);
+    console.log('changed in menu', this.permanentMode);
   }
 }

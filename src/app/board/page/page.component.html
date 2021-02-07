@@ -1,4 +1,4 @@
-  <toolbox [mode]="permanentMode" (toolSelectedEvent)="addItem($event)"></toolbox>
+  <toolbox [permanentMode]="permanentMode" (onToolSelection)="setMode($event)"></toolbox>
   <div class="card p-2">
-    <bordFabric></bordFabric>
+    <bordFabric [permanentMode]="permanentMode" ></bordFabric>
   </div>

@@ -2,7 +2,7 @@
   <button
     type="button"
     class="btn"
-    [ngClass]="mode == 'selection' ? 'btn-primary' : 'btn-outline-primary'"
+    [ngClass]="permanentMode == 'selection' ? 'btn-primary' : 'btn-outline-primary'"
     (click)="onToolSelect('selection')"
   >
     <fa-icon [icon]="['fas', 'mouse-pointer']"></fa-icon>
@@ -10,7 +10,7 @@
   <button
     type="button"
     class="btn"
-    [ngClass]="mode == 'draw' ? 'btn-primary' : 'btn-outline-primary'"
+    [ngClass]="permanentMode == 'draw' ? 'btn-primary' : 'btn-outline-primary'"
     (click)="onToolSelect('draw')"
   >
     <fa-icon [icon]="['fas', 'pen']"></fa-icon>

@@ -1,5 +1,8 @@
-<canvas id="canvasBord" width="1200" height="800" style="border: 1px dashed red;"></canvas>
+<div>
+  <span class="badge bg-warning">permanentMode => {{permanentMode}}</span>
+</div>
+<canvas id="canvasBord" #htmlCanvas width="1200" height="800" style="border: 1px dashed red;"></canvas>
 <div>
   <button class="btn btn-sm btn-outline-primary mr-2" (click)="buttonPress()">click</button>
-  <span class="badge bg-info text-light">{{canvasEvent}}</span>
+  <span class="badge bg-info text-light">canvasEvent => {{canvasEvent}}</span>
 </div>

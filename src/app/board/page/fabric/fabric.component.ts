@@ -1,8 +1,17 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  Input,
+  SimpleChanges,
+  AfterViewInit,
+  OnChanges,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { fabric } from 'fabric';
 import * as _ from 'lodash';
 import { v4 as uuid } from 'uuid';
-
 
 @Component({
   selector: 'bordFabric',
@@ -10,17 +19,16 @@ import { v4 as uuid } from 'uuid';
   styleUrls: ['./fabric.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FabricComponent implements OnInit {
-  bordCanvas: fabric.Canvas;
+export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
+  @ViewChild('htmlCanvas', { static: true }) htmlCanvas: ElementRef | undefined;
+  // public bordCanvas: any;
+  private bordCanvas: fabric.Canvas | undefined;
   public canvasEvent!: string;
 
-  constructor() {
-    this.bordCanvas = new fabric.Canvas('canvasBord', {
-      renderOnAddRemove: false,
-      selection: false, // this.mode === 'selection',
-      isDrawingMode: false, // this.mode === 'drawing',
-    });
+  @Input()
+  permanentMode!: string;
 
+  constructor() {
     // default props
     fabric.Object.prototype.set({
       fill: '',
@@ -31,16 +39,22 @@ export class FabricComponent implements OnInit {
       originY: 'center',
       noScaleCache: false,
     });
-
   }
 
-  ngOnInit(): void {
-    // create canvas instance
-    this.bordCanvas = new fabric.Canvas('canvasBord', {
-      renderOnAddRemove: false,
-      selection: false,
-      isDrawingMode: false,
+  ngAfterViewInit(): void {
+    // setup front side canvas
+    this.bordCanvas = new fabric.Canvas(this.htmlCanvas?.nativeElement, {
+      selection: this.permanentMode === 'selection' ? true : false,
+      isDrawingMode: this.permanentMode === 'draw' ? true : false,
     });
+
+    // initialize selection Events
+    this.bordCanvas.on({
+      'before:selection:cleared':(e: any) => { this.handleSelection('before:selection:cleared', e)},
+      'selection:cleared':(e: any) => { this.handleSelection('selection:cleared', e)},
+      'selection:created':(e: any) => { this.handleSelection('selection:created', e)},
+      'selection:updated':(e: any) => { this.handleSelection('selection:updated', e)}
+    })
 
     // temp rect added
     const rect = new fabric.Rect({
@@ -51,32 +65,21 @@ export class FabricComponent implements OnInit {
       rx: 5,
       ry: 5,
       // selectable: false,
-      objID: uuid(),
     });
 
+    rect.set({objID: uuid()});
     this.bordCanvas.add(rect);
     this.bordCanvas.requestRenderAll();
-
-    this.canvasEvent = 'selection';
-    // initialize Events
-    this.initializeCanvasEvents();
   }
 
-  initializeCanvasEvents() {
-    // selection related events
-    this.bordCanvas.on('before:selection:cleared', (e) => {
-      this.handleSelection('before:selection:cleared', e);
-    });
-    this.bordCanvas.on('selection:cleared', (e) => {
-      this.handleSelection('selection:cleared', e);
-    });
-    this.bordCanvas.on('selection:created', (e) => {
-      this.handleSelection('selection:created', e);
-    });
-    this.bordCanvas.on('selection:updated', (e) => {
-      this.handleSelection('selection:updated', e);
-    });
-    // object related events
+  ngOnInit(): void {
+
+  }
+
+  ngOnChanges(_changes: SimpleChanges): void {
+    // Called before any other lifecycle hook. Use it to inject dependencies, but avoid any serious work here.
+    // Add '${implements OnChanges}' to the class.
+    console.log('changed', _changes);
   }
 
   handleSelection(type: string, e: any) {
@@ -87,8 +90,8 @@ export class FabricComponent implements OnInit {
     console.log(this, this.canvasEvent);
   }
 
-  buttonPress(){
+  buttonPress() {
     this.canvasEvent = 'done';
+    alert('done');
   }
-
 }
