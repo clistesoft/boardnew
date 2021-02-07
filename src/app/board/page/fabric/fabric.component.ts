@@ -44,25 +44,6 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
     });
   }
 
-  handleSelection(type: string, e: any) {
-    // console.log('handleSelection=>', type, e.target?.type);
-    // log events on statusbar
-    this.canvasEvent = type + ' = ' + e.target?.type ;
-    // console.log(this, this.canvasEvent);
-    this.cdr.detectChanges();
-  }
-
-  handleMouse(type: string, e: any): void {
-    // console.log('handleSelection=>', type, e.absolutePointer, e.pointer);
-    this.mousePointer = e.pointer;
-    this.cdr.detectChanges();
-  }
-
-  buttonPress() {
-    this.canvasEvent = 'done';
-    alert('done');
-  }
-
   ngAfterViewInit(): void {
     // setup front side canvas
     this.bordCanvas = new fabric.Canvas(this.htmlCanvas?.nativeElement, {
@@ -132,6 +113,20 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
       this.bordCanvas.isDrawingMode =
         this.permanentMode === 'draw' ? true : false;
     }
+  }
+
+  handleSelection(type: string, e: any) {
+    // console.log('handleSelection=>', type, e.target?.type);
+    // log events on statusbar
+    this.canvasEvent = type + ' = ' + e.target?.type ;
+    // console.log(this, this.canvasEvent);
+    this.cdr.detectChanges();
+  }
+
+  handleMouse(type: string, e: any): void {
+    // console.log('handleSelection=>', type, e.absolutePointer, e.pointer);
+    this.mousePointer = e.pointer;
+    this.cdr.detectChanges();
   }
 
 }
