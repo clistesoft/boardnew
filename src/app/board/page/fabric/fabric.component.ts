@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 })
 export class FabricComponent implements OnInit {
   bordCanvas: fabric.Canvas;
-  canvasEvent: string;
+  public canvasEvent!: string;
 
   constructor() {
     this.bordCanvas = new fabric.Canvas('canvasBord', {
@@ -29,10 +29,11 @@ export class FabricComponent implements OnInit {
       originY: 'center',
       noScaleCache: false,
     });
-    this.canvasEvent = 'Events';
+
   }
 
   ngOnInit(): void {
+    // create canvas instance
     this.bordCanvas = new fabric.Canvas('canvasBord', {
       renderOnAddRemove: false,
       selection: false,
@@ -53,6 +54,7 @@ export class FabricComponent implements OnInit {
     this.bordCanvas.add(rect);
     this.bordCanvas.requestRenderAll();
 
+    this.canvasEvent = 'selection';
     // initialize Events
     this.initializeCanvasEvents();
   }
@@ -79,7 +81,11 @@ export class FabricComponent implements OnInit {
     console.log('handleSelection=>', type, e.target?.type);
     // log events on statusbar
     this.canvasEvent = type + '=' + e.target?.type;
-    console.log(this.canvasEvent);
+    console.log(this, this.canvasEvent);
+  }
+
+  buttonPress(){
+    this.canvasEvent = 'done';
   }
 
 }
