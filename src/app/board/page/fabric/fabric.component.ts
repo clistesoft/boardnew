@@ -8,6 +8,7 @@ import {
   OnChanges,
   ViewChild,
   ElementRef,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { fabric } from 'fabric';
 import * as _ from 'lodash';
@@ -19,16 +20,18 @@ import { v4 as uuid } from 'uuid';
   styleUrls: ['./fabric.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+
 export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('htmlCanvas', { static: true }) htmlCanvas: ElementRef | undefined;
   // public bordCanvas: any;
   private bordCanvas: fabric.Canvas | undefined;
   public canvasEvent!: string;
+  public mousePointer!: { x: number; y: number };
 
   @Input()
   permanentMode!: string;
 
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     // default props
     fabric.Object.prototype.set({
       fill: '',
@@ -41,20 +44,65 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
     });
   }
 
+  handleSelection(type: string, e: any) {
+    // console.log('handleSelection=>', type, e.target?.type);
+    // log events on statusbar
+    this.canvasEvent = type + ' = ' + e.target?.type ;
+    // console.log(this, this.canvasEvent);
+    this.cdr.detectChanges();
+  }
+
+  handleMouse(type: string, e: any): void {
+    // console.log('handleSelection=>', type, e.absolutePointer, e.pointer);
+    this.mousePointer = e.pointer;
+    this.cdr.detectChanges();
+  }
+
+  buttonPress() {
+    this.canvasEvent = 'done';
+    alert('done');
+  }
+
   ngAfterViewInit(): void {
     // setup front side canvas
     this.bordCanvas = new fabric.Canvas(this.htmlCanvas?.nativeElement, {
       selection: this.permanentMode === 'selection' ? true : false,
       isDrawingMode: this.permanentMode === 'draw' ? true : false,
+      // freeDrawingCursor:
     });
+    this.bordCanvas.freeDrawingBrush.width = 4;
 
     // initialize selection Events
     this.bordCanvas.on({
-      'before:selection:cleared':(e: any) => { this.handleSelection('before:selection:cleared', e)},
-      'selection:cleared':(e: any) => { this.handleSelection('selection:cleared', e)},
-      'selection:created':(e: any) => { this.handleSelection('selection:created', e)},
-      'selection:updated':(e: any) => { this.handleSelection('selection:updated', e)}
-    })
+      'before:selection:cleared': (e: any) => {
+        this.handleSelection('before:selection:cleared', e);
+      },
+      'selection:cleared': (e: any) => {
+        this.handleSelection('selection:cleared', e);
+      },
+      'selection:created': (e: any) => {
+        this.handleSelection('selection:created', e);
+      },
+      'selection:updated': (e: any) => {
+        this.handleSelection('selection:updated', e);
+      },
+    });
+    // initialize mouse Events
+    this.bordCanvas.on({
+      /**
+        'mouse:up', 'mouse:down', 'mouse:move', 'mouse:up:before', 'mouse:down:before', 'mouse:move:before'
+        'mouse:dblclick', 'mouse:wheel', 'mouse:over', 'mouse:out'
+       */
+      'mouse:up': (e: any) => {
+        this.handleMouse('mouse:up', e);
+      },
+      'mouse:down': (e: any) => {
+        this.handleMouse('mouse:down', e);
+      },
+      'mouse:move': (e: any) => {
+        this.handleMouse('mouse:move', e);
+      },
+    });
 
     // temp rect added
     const rect = new fabric.Rect({
@@ -67,31 +115,23 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
       // selectable: false,
     });
 
-    rect.set({objID: uuid()});
+    rect.set({ objID: uuid() });
     this.bordCanvas.add(rect);
     this.bordCanvas.requestRenderAll();
   }
 
-  ngOnInit(): void {
-
-  }
+  ngOnInit(): void {}
 
   ngOnChanges(_changes: SimpleChanges): void {
     // Called before any other lifecycle hook. Use it to inject dependencies, but avoid any serious work here.
     // Add '${implements OnChanges}' to the class.
-    console.log('changed', _changes);
+    // console.log('changed', _changes);
+    if (this.permanentMode && this.bordCanvas) {
+      this.bordCanvas.selection =
+        this.permanentMode === 'selection' ? true : false;
+      this.bordCanvas.isDrawingMode =
+        this.permanentMode === 'draw' ? true : false;
+    }
   }
 
-  handleSelection(type: string, e: any) {
-    // handle Selections
-    console.log('handleSelection=>', type, e.target?.type);
-    // log events on statusbar
-    this.canvasEvent = type + ' = ' + e.target?.type + ' / ' + e.target?.objID;
-    console.log(this, this.canvasEvent);
-  }
-
-  buttonPress() {
-    this.canvasEvent = 'done';
-    alert('done');
-  }
 }
