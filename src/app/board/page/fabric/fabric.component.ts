@@ -10,6 +10,7 @@ import {
   ElementRef,
   ChangeDetectorRef,
   HostListener,
+  Renderer2,
 } from '@angular/core';
 import { fabric } from 'fabric';
 import * as _ from 'lodash';
@@ -23,6 +24,7 @@ import { v4 as uuid } from 'uuid';
 })
 export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('htmlCanvas', { static: true }) htmlCanvas: ElementRef | undefined;
+  @ViewChild('popBox', { static: true }) popBox: ElementRef | undefined;
   // public bordCanvas: any;
   private bordCanvas!: fabric.Canvas;
   public canvasEvent!: string;
@@ -33,7 +35,7 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
   @Input()
   permanentMode!: string;
 
-  constructor(private cdr: ChangeDetectorRef) {
+  constructor(private cdr: ChangeDetectorRef, private renderer: Renderer2) {
     // default props
     fabric.Object.prototype.set({
       fill: '',
@@ -82,39 +84,47 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
     });
     this.bordCanvas.freeDrawingBrush.width = 4;
 
-
     // initialize selection Events
     this.bordCanvas.on({
       'before:selection:cleared': (e: any) => {
-        this.handleSelection('before:selection:cleared', e);
+        this.handleSelectionEvents('before:selection:cleared', e);
       },
       'selection:cleared': (e: any) => {
-        this.handleSelection('selection:cleared', e);
+        this.handleSelectionEvents('selection:cleared', e);
       },
       'selection:created': (e: any) => {
-        this.handleSelection('selection:created', e);
+        this.handleSelectionEvents('selection:created', e);
       },
       'selection:updated': (e: any) => {
-        this.handleSelection('selection:updated', e);
+        this.handleSelectionEvents('selection:updated', e);
       },
     });
-    // // initialize mouse Events
+    // initialize mouse Events
     this.bordCanvas.on({
       /**
-        'mouse:up', 'mouse:down', 'mouse:move', 'mouse:up:before', 'mouse:down:before', 'mouse:move:before'
-        'mouse:dblclick', 'mouse:wheel', 'mouse:over', 'mouse:out'
+        'mouse:up', 'mouse:down', 'mouse:move', 'mouse:up:before', 'mouse:down:before',
+        'mouse:move:before','mouse:dblclick', 'mouse:wheel', 'mouse:over', 'mouse:out'
        */
       'mouse:up': (e: any) => {
-        this.handleMouse('mouse:up', e);
+        this.handleMouseEvents('mouse:up', e);
       },
       'mouse:down': (e: any) => {
-        this.handleMouse('mouse:down', e);
+        this.handleMouseEvents('mouse:down', e);
       },
       'mouse:move': (e: any) => {
-        this.handleMouse('mouse:move', e);
+        this.handleMouseEvents('mouse:move', e);
       },
     });
-
+    // initialize Object related Events
+    this.bordCanvas.on({
+      /**
+        'object:modified','object:moving','object:scaling','object:rotating','object:skewing',
+        'object:moved','object:scaled','object:rotated','object:skewed'
+       */
+      'object:moving': (e: any) => {
+        this.handleObjectEvents('object:moving', e);
+      },
+    });
     // temp rect added
     const rect = new fabric.Rect({
       left: 100,
@@ -145,19 +155,76 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
     }
   }
 
-  handleSelection(type: string, e: any) {
-    // console.log('handleSelection=>', type, e.target?.type);
+  togglePopover(show: boolean = false, pos?: any) {
+    console.log(
+      'togglePopover',
+      (pos ? pos.x : 0) + 'px',
+      (pos ? pos.y : 0) + 'px'
+    );
+    if (show) {
+      this.renderer.removeClass(this.popBox?.nativeElement, 'd-none');
+    } else {
+      this.renderer.addClass(this.popBox?.nativeElement, 'd-none');
+    }
+    this.renderer.setStyle(
+      this.popBox?.nativeElement,
+      'top',
+      (pos ? pos.y : 0) + 'px'
+    );
+    this.renderer.setStyle(
+      this.popBox?.nativeElement,
+      'left',
+      (pos ? pos.x : 0) + 'px'
+    );
+  }
+
+  movePopover(pos?: any) {
+    this.renderer.setStyle(
+      this.popBox?.nativeElement,
+      'top',
+      (pos ? pos.y : 0) + 'px'
+    );
+    this.renderer.setStyle(
+      this.popBox?.nativeElement,
+      'left',
+      (pos ? pos.x : 0) + 'px'
+    );
+  }
+
+  handleSelectionEvents(type: string, e: any) {
+    // console.log('handleSelectionEvents=>', type, e.target?.type);
     // log events on statusbar
     this.canvasEvent = type + (e.target?.type ? ' = ' + e.target?.type : '');
     // console.log(this, this.canvasEvent);
     this.cdr.detectChanges();
+    /**
+     * get selected object
+     */
+    const selObj: fabric.Object = this.bordCanvas.getActiveObject();
+    /**
+     * description
+     */
+    switch (type) {
+      case 'selection:created':
+        this.togglePopover(true, {
+          x: selObj?.oCoords?.mb.x,
+          y: selObj?.oCoords?.mb.y,
+        });
+        break;
+      case 'before:selection:cleared':
+        this.togglePopover(false);
+        break;
+
+      default:
+        break;
+    }
   }
 
-  handleMouse(type: string, e: any): void {
-    const _this = this;
-    // console.log('handleSelection=>', type, e.absolutePointer, e.pointer);
+  handleMouseEvents(type: string, e: any): void {
+    // console.log('handleSelectionEvents=>', type, e.absolutePointer, e.pointer);
     this.mousePointer = this.bordCanvas.getPointer(e);
     this.cdr.detectChanges();
+
     //check temporaryMode
     // this.bordCanvas.isDrawingMode =
     //   this.temporaryMode === 'draw:start' ? true : false;
@@ -172,26 +239,24 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
         pointer: this.mousePointer,
       });
     }
-    if (this.temporaryMode === 'draw:stop' && this.bordCanvas.isDrawingMode ) {
+
+    if (this.temporaryMode === 'draw:stop' && this.bordCanvas.isDrawingMode) {
       this.bordCanvas.isDrawingMode = false;
       this.bordCanvas.freeDrawingBrush.onMouseUp(this.mousePointer, {
         e: e,
         pointer: this.mousePointer,
       });
     }
-    // let obj = { pointer: this.mousePointer, e: e };
-    // if (this.bordCanvas._isCurrentlyDrawing) {
-    //   var pointer = this.getPointer(e);
-    //
-    // }
-    // if (!this.bordCanvas.isDrawing) {
-    //   this.bordCanvas.isDrawing = true;
-    //   this.bordCanvas.freeDrawingBrush.onMouseDown(pointer, obj);
-    // }
-    // }
 
-    // this.freeDrawingBrush.onMouseMove(pointer, obj);
-    // this._handleEvent(e, 'move');
     this.bordCanvas.renderAll();
+  }
+
+  handleObjectEvents(type: string, e: any): void {
+    console.log('handleObjectEvents=>', type, e);
+    /**
+     * get selected object and move the popover
+     */
+    const selObj: fabric.Object = e.target;
+    this.movePopover({ x: selObj?.oCoords?.mb.x, y: selObj?.oCoords?.mb.y });
   }
 }

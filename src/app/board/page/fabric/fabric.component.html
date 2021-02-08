@@ -1,21 +1,26 @@
 <div>
   <span class="badge bg-warning">permanentMode => {{ permanentMode }}</span>
   <span class="badge bg-secondary text-light"
-    >Key => {{ keyPressed?.type }} {{ keyPressed?.key }}/{{
-      keyPressed?.code
-    }}
+    >Key => {{ keyPressed?.type }} {{ keyPressed?.key }}/{{ keyPressed?.code }}
   </span>
 </div>
 <div>
-  <span class="badge bg-danger text-light">temporaryMode => {{ temporaryMode }}</span>
+  <span class="badge bg-danger text-light"
+    >temporaryMode => {{ temporaryMode }}</span>
 </div>
-<canvas
-  id="canvasBord"
-  #htmlCanvas
-  width="1024"
-  height="600"
-  style="border: 1px dashed red"
-></canvas>
+<div class="position-relative">
+  <div class="pop-box d-none arrow-top" #popBox>
+    This is a box
+  </div>
+  <canvas
+    id="canvasBord"
+    #htmlCanvas
+    width="1024"
+    height="600"
+    style="border: 1px dashed red"
+  ></canvas>
+</div>
+
 <div>
   <span class="badge bg-info text-light">event => {{ canvasEvent }}</span>
   <span class="badge bg-warning"
