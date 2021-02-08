@@ -15,6 +15,20 @@
   >
     <fa-icon [icon]="['fas', 'pen']"></fa-icon>
   </button>
-  <button type="button" class="btn btn-outline-primary">b</button>
-  <button type="button" class="btn btn-outline-primary">b</button>
+  <button
+    type="button"
+    class="btn"
+    [ngClass]="permanentMode == 'rect' ? 'btn-primary' : 'btn-outline-primary'"
+    (click)="onToolSelect('rect')"
+  >
+    <fa-icon [icon]="['far', 'square']"></fa-icon>
+  </button>
+  <button
+  type="button"
+  class="btn"
+  [ngClass]="permanentMode == 'circle' ? 'btn-primary' : 'btn-outline-primary'"
+  (click)="onToolSelect('circle')"
+>
+  <fa-icon [icon]="['far', 'circle']"></fa-icon>
+</button>
 </div>

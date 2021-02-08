@@ -60,10 +60,17 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
         if (event.code === 'AltLeft' || event.code === 'AltRight') {
           this.temporaryMode = 'draw:start';
         }
+        // temporary mode for to selection
+        if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') {
+          this.temporaryMode = 'select:start';
+        }
         break;
       case 'keyup':
         if (event.code === 'AltLeft' || event.code === 'AltRight') {
           this.temporaryMode = 'draw:stop';
+        }
+        if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') {
+          this.temporaryMode = 'select:stop';
         }
         break;
       default:
@@ -121,7 +128,13 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
         'object:modified','object:moving','object:scaling','object:rotating','object:skewing',
         'object:moved','object:scaled','object:rotated','object:skewed'
        */
+      'object:modified': (e: any) => {
+        this.handleObjectEvents('object:moving', e);
+      },
       'object:moving': (e: any) => {
+        this.handleObjectEvents('object:moving', e);
+      },
+      'object:scaling': (e: any) => {
         this.handleObjectEvents('object:moving', e);
       },
     });
@@ -156,11 +169,11 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   togglePopover(show: boolean = false, pos?: any) {
-    console.log(
-      'togglePopover',
-      (pos ? pos.x : 0) + 'px',
-      (pos ? pos.y : 0) + 'px'
-    );
+    // console.log(
+    //   'togglePopover',
+    //   (pos ? pos.x : 0) + 'px',
+    //   (pos ? pos.y : 0) + 'px'
+    // );
     if (show) {
       this.renderer.removeClass(this.popBox?.nativeElement, 'd-none');
     } else {
@@ -197,14 +210,13 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
     this.canvasEvent = type + (e.target?.type ? ' = ' + e.target?.type : '');
     // console.log(this, this.canvasEvent);
     this.cdr.detectChanges();
+
     /**
      * get selected object
      */
     const selObj: fabric.Object = this.bordCanvas.getActiveObject();
-    /**
-     * description
-     */
     switch (type) {
+      case 'selection:updated':
       case 'selection:created':
         this.togglePopover(true, {
           x: selObj?.oCoords?.mb.x,
@@ -225,10 +237,8 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
     this.mousePointer = this.bordCanvas.getPointer(e);
     this.cdr.detectChanges();
 
-    //check temporaryMode
-    // this.bordCanvas.isDrawingMode =
-    //   this.temporaryMode === 'draw:start' ? true : false;
-    // // pointer = this.getPointer(e);
+    /**
+    //check temporaryMode DRAW
     if (this.temporaryMode === 'draw:start') {
       if (!this.bordCanvas.isDrawingMode) {
         this.bordCanvas.isDrawingMode = true;
@@ -247,16 +257,48 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
         pointer: this.mousePointer,
       });
     }
+    */
+
+    // check temporaryMode selection
+    if (this.temporaryMode === 'select:start') {
+      if (this.bordCanvas.isDrawingMode && this.permanentMode === 'draw' ) {
+        this.bordCanvas.isDrawingMode = false;
+      }
+      if (!this.bordCanvas.selection) {
+        this.bordCanvas.selection = true
+      }
+    }
+
+    if (this.temporaryMode === 'select:stop') {
+      if (this.bordCanvas.getActiveObjects().length >0){
+        return;
+      }
+
+      if (!this.bordCanvas.isDrawingMode && this.permanentMode === 'draw' ) {
+        this.bordCanvas.isDrawingMode = true;
+      }
+      this.bordCanvas.selection = false;
+
+    }
 
     this.bordCanvas.renderAll();
   }
 
   handleObjectEvents(type: string, e: any): void {
-    console.log('handleObjectEvents=>', type, e);
+    // console.log('handleObjectEvents=>', type, e);
     /**
-     * get selected object and move the popover
+     * get selected object
      */
     const selObj: fabric.Object = e.target;
     this.movePopover({ x: selObj?.oCoords?.mb.x, y: selObj?.oCoords?.mb.y });
+
+    switch (type) {
+      case 'object:moving':
+        // this.movePopover({ x: selObj?.oCoords?.mb.x, y: selObj?.oCoords?.mb.y });
+        break;
+
+      default:
+        break;
+    }
   }
 }
