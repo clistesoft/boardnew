@@ -82,25 +82,6 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
     });
     this.bordCanvas.freeDrawingBrush.width = 4;
 
-    // this.bordCanvas.freeDrawingBrush.onMouseDown = (function(onMouseDown) {
-    //   return function(pointer) {
-    //     onMouseDown.call(this, pointer);
-    //   }
-    // })(this.bordCanvas.freeDrawingBrush.onMouseDown);
-
-    // this.bordCanvas.freeDrawingBrush.onMouseMove = (function(onMouseMove) {
-    //   return function(pointer) {
-    //     onMouseMove.call(this, pointer);
-    //   }
-    // })(this.bordCanvas.freeDrawingBrush.onMouseMove);
-
-    // this.bordCanvas.freeDrawingBrush.onMouseUp = (function(onMouseUp) {
-    //   return function(pointer) {
-    //     console.log('up');
-    //     this.updatedOn = Date.now();
-    //     onMouseUp.call(this, pointer);
-    //   }
-    // })(this.bordCanvas.freeDrawingBrush.onMouseUp);
 
     // initialize selection Events
     this.bordCanvas.on({
