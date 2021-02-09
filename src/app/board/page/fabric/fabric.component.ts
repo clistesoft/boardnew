@@ -270,7 +270,7 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
     }
 
     if (this.temporaryMode === 'select:stop') {
-      if (this.bordCanvas.getActiveObjects().length >0){
+      if (this.bordCanvas.getActiveObjects().length > 0){
         return;
       }
 
@@ -278,7 +278,6 @@ export class FabricComponent implements OnInit, OnChanges, AfterViewInit {
         this.bordCanvas.isDrawingMode = true;
       }
       this.bordCanvas.selection = false;
-
     }
 
     this.bordCanvas.renderAll();
